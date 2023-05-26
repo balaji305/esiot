@@ -12,6 +12,24 @@ const data = fs.readFileSync('./ans.txt',
     res.send(data);
 })
 
+app.get('/keil', (req, res) => {
+
+  const fs = require('fs');
+
+ 
+
+// Calling the readFileSync() method
+
+// to read 'input.txt' file
+
+const data = fs.readFileSync('./timer.txt',
+
+    { encoding: 'utf8', flag: 'r' });
+
+    res.send(data);
+
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
