@@ -4,30 +4,30 @@ const port = 3000
 
 app.get('/iot', (req, res) => {
   const fs = require('fs');
- 
-// Calling the readFileSync() method
-// to read 'input.txt' file
-const data = fs.readFileSync('./ans.txt',
+  const data = fs.readFileSync('./ans.txt',
     { encoding: 'utf8', flag: 'r' });
-    res.send(data);
+   res.send(data);
 })
 
 app.get('/keil', (req, res) => {
-
   const fs = require('fs');
-
- 
-
-// Calling the readFileSync() method
-
-// to read 'input.txt' file
-
-const data = fs.readFileSync('./timer.txt',
-
+  const data = fs.readFileSync('./timer.txt',
     { encoding: 'utf8', flag: 'r' });
+  res.send(data);
+})
 
-    res.send(data);
+app.get('/mongo', (req, res) => {
+  const fs = require('fs');
+  const data = fs.readFileSync('./mongo.txt',
+    { encoding: 'utf8', flag: 'r' });
+  res.send(data);
+})
 
+app.get('/hadoop', (req, res) => {
+  const fs = require('fs');
+  const data = fs.readFileSync('./hadoop.txt',
+    { encoding: 'utf8', flag: 'r' });
+  res.send(data);
 })
 
 app.listen(port, () => {
