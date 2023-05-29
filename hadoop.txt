@@ -1,0 +1,206 @@
+1. Download Hadoop and Java and extract the tar files
+2. Set the JAVA_HOME in the .bashrc file
+3. Modify Hadoop Configuration Files
+   - core-site.xml: Give the name node address
+   - yarn-site.xml: Give the resource manager address
+   - hdfs-site.xml: Give the name and data node directory
+   - mapred-site.xml: Give the map reduce framework name
+   - Set the java path in hadoop-env.sh, mapred-env.sh, yarn-env.sh
+4. Generate ssh key for localhost and copy the public key to the authorized_keys file
+5. Format the name node
+6. Start all hadoop related services
+      start-all.sh
+7. Check the browser web GUI on `http://localhost:19888`
+8. List the files in the HDFS
+      hadoop fs -ls /
+9. Create a directory in the HDFS
+      hadoop fs -mkdir /user
+10. Add a file to the HDFS
+      hadoop fs -put /home/username/file.txt /user
+11. Stop all hadoop related services
+      stop-all.sh
+
+
+1. Java 11 is recommended. Instructions for Java installation not included
+    curl https://dlcdn.apache.org/hadoop/common/hadoop-3.3.5/hadoop-3.3.5.tar.gz > hadoop
+    tar -xzvf hadoop
+    sudo apt-get install vim
+    vim ~/.bashrc
+
+2. Set the java Path in your Home Path)
+    export JAVA_HOME=<enter your jdk path here e.g. "/user/alice/jdk1.8.0_202">
+    export PATH=HOME/bin:JAVA_HOME/bin:PATH
+
+3. Execute the bashrc file
+    source .bashrc
+
+4. Check the java path
+    echo JAVA_HOME
+
+5. Modify Hadoop Configuration Files
+
+6. Insert the following within the _configuration_ xml tag in each file
+    vim etc/hadoop/core-site.xml
+        <property>
+        <name>fs.default.name</name>
+        <value>hdfs://localhost:50000</value>
+        </property>
+
+    vim etc/hadoop/yarn-site.xml
+        <property>
+        <name>yarn.nodemanager.aux-services</name> <value>mapreduce_shuffle</value>
+        </property>
+        <property>
+        <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name> <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+        </property>
+        <property>
+        <description>The hostname of the RM.</description>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>localhost</value>
+        </property>
+        <property>
+        <description>The address of the applications manager interface in the RM.</description>
+        <name>yarn.resourcemanager.address</name>
+        <value>localhost:8032</value>
+        </property>
+
+    vim etc/hadoop/hdfs-site.xml
+        <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/home/pragadeshbs/hadoop-dir/namenode-dir</value>
+        </property>
+        <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/home/pragadeshbs/hadoop-dir/datanode-dir</value>
+        </property>
+
+    vim etc/hadoop/mapred-site.xml
+        <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+        </property>
+
+7. Enter your Java path in the following files
+    vim etc/hadoop/hadoop-env.sh
+        export JAVA_HOME=/user/alice/jdk1.8.0_202
+    vim etc/hadoop/mapred-env.sh
+        export JAVA_HOME=/user/alice/jdk1.8.0_202
+    vim etc/hadoop/yarn-env.sh
+        export JAVA_HOME=/user/alice/jdk1.8.0_202
+    vim etc/hadoop/slaves
+        localhost
+
+8. Install the ssh key
+    (Generates, Manages and Converts Authentication keys)
+    sudo apt-get install openssh-server
+        ssh-keygen -t rsa
+
+9. Setup passwordless ssh to localhost and to slaves
+    cd ~/.ssh
+    ls
+    cat id_rsa.pub >> authorized_keys
+
+10. Copy the id_rsa.pub from NameNode to authorized_keys in all machines
+    Make sure you are able to ssh to localhost without password
+        ssh localhost
+        exit
+    
+11. Format NameNode
+    cd hadoop-2.9.1
+    bin/hadoop namenode -format
+
+12. Start All Hadoop Related Services
+    sbin/start-all.sh
+
+13. Check the Browser Web GUI
+    Hadoop Web GUI -> http://localhost:8088/
+    Node manager info -> http://localhost:8042/
+    HDFS -> http://localhost:9870/
+
+14. To Stop All Hadoop and Yarn Related Services
+    sbin/stop-all.sh
+
+
+
+1. Make sure you have Hadoop installed, have it in the path (.bashrc file) and running.
+
+2. Modify the following hadoop file
+    vim <HADOOP_HOME>/etc/hadoop/mapred-site.xml
+        <property>
+        <name>yarn.app.mapreduce.am.env</name>
+        <value>HADOOP_MAPRED_HOME=${full path of your hadoop distribution directory}</value>
+        </property>
+        <property>
+        <name>mapreduce.map.env</name>
+        <value>HADOOP_MAPRED_HOME=${full path of your hadoop distribution directory}</value>
+        </property>
+        <property>
+        <name>mapreduce.reduce.env</name>
+        <value>HADOOP_MAPRED_HOME=${full path of your hadoop distribution directory}</value>
+        </property>
+
+3. Download mysql
+    sudo apt install mysql-server
+
+4. Download Hive
+    curl https://dlcdn.apache.org/hive/hive-2.3.9/apache-hive-2.3.9-bin.tar.gz > apache-hive-2.3.9-bin.tar.gz
+    tar -xzf apache-hive-2.3.9-bin.tar.gz
+
+5. Download MySQL Jar file into the lib folder in the hive directory.
+    curl https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar > mysql-connector-java-8.0.33.jar
+
+6. Create the hive-site.xml file
+    touch hive-site.xml
+
+7. Insert the following into the file
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+    
+    <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:mysql://localhost/metastore?createDatabaseIfNotExist=true</value>
+    </property>
+
+    <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>com.mysql.jdbc.Driver</value>
+    </property>
+
+    <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>root</value>
+    </property>
+
+    <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>root</value>
+    </property>
+    <property>
+    <name>hive.metastore.schema.verification</name>
+    <value>false</value>
+    </property>
+    </configuration>
+
+7. Create the metastore database in mysql
+    bin/schematool -dbType mysql -initSchema
+
+8. View metadata in mysql
+    mysql -u root -p
+    show databases;
+    use metastore;
+    show tables;
+
+9. Start hive
+    bin/hive
+
+10. Create a database
+    create database test;
+    use test;
+    create table test.emp (id int, name string, salary double) row format delimited fields terminated by ',';
+
+11. Insert data into the table
+    insert into test.emp values (1, 'A', 1000), (2, 'B', 2000), (3, 'C', 3000);
+
+12. View the data
+    select * from test.emp;
