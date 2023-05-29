@@ -1,0 +1,70 @@
+//REPLICATION
+
+sudo service mongod stop
+sudo systemctl stop mongod
+sudo rm -r data/
+mkdir -p data/db1
+mkdir -p data/db2
+mkdir -p data/db3
+
+mongod --port 27017 --dbpath data/db1 --replSet rs0
+
+mongod --port 27018 --dbpath data/db2 --replSet rs0
+
+mongod --port 27019 --dbpath data/db3 --replSet rs0
+
+mongosh --port 27017
+rs.initiate()
+rs.add("localhost:27018")
+rs.add("localhost:27019")
+rs.status()
+
+mongosh --port 27018
+db.getMongo().setReadPref('secondary')
+
+mongosh --port 27019
+db.getMongo().setReadPref('secondary')
+
+
+//SHARDING
+
+sudo service mongod stop
+sudo systemctl stop mongod
+sudo rm -r data/
+mkdir -p data/configdb
+mkdir -p data/db1
+mkdir -p data/db2
+
+mongod --configsvr --replSet config --dbpath data/configdb
+
+mongosh --port 27019
+rs.initiate()
+
+mongod --shardsvr --replSet shard1 --dbpath data/db1 --port 27010
+
+mongosh --port 27010
+rs.initiate()
+
+mongod --shardsvr --replSet shard2 --dbpath data/db2 --port 27011
+
+mongosh --port 27011
+rs.initiate()
+
+mongos --configdb config/127.0.0.1:27019
+
+mongosh
+sh.addShard("shard1/localhost:27010")
+sh.addShard("shard2/localhost:27011")
+sh.enableSharding("populations")
+sh.shardCollection("populations.cities", { "country": "hashed" })
+use populations
+db.cities.insertMany([
+    {"name": "Seoul", "country": "South Korea", "continent": "Asia", "population": 25.674 }
+])
+sh.status()
+db.cities.getShardDistribution()
+db.cities.find().explain()
+db.cities.find({"continent": "Europe"}).explain()
+db.cities.find({"country": "Japan"}).explain()
+
+//
