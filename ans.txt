@@ -2,6 +2,55 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.*;
+
+public class HellmanServer {
+    
+    private static long power(long a, long b, long p){
+        if (b == 1)
+            return a;
+        else
+            return (((long)Math.pow(a, b)) % p);
+    }
+
+    public static void main(String[] args) throws Exception{
+        Scanner sc = new Scanner(System.in);
+        ServerSocket ss = new ServerSocket(4000);
+        Socket s = ss.accept();
+        PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+        long P,G,b,y,x,sk;
+        P = Long.parseLong(in.readLine());
+        G = Long.parseLong(in.readLine());
+        x = Long.parseLong(in.readLine());
+        System.out.println("Received Prime Number : " + P);
+        System.out.println("Received Primitive Modulo : " + G);
+        System.out.println("Received KA : " + x);
+        System.out.print("\nEnter Client's Private Key, b : ");
+        b = sc.nextLong();
+        y = power(G, b, P);
+        out.println(y);
+        sk = power(x, b, P);
+        System.out.println("\nShared Key : " + sk);
+        
+        in.close();
+        out.close();
+        s.close();
+        ss.close();
+        sc.close();
+    }
+    
+}
+
+</h5>
+
+<h5>
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
 
