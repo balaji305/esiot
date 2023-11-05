@@ -1,0 +1,213 @@
+<h5>
+import socket
+import json
+import random
+
+def is_prime(n):
+    if n <= 1:
+        return False
+    elif n <= 3:
+        return True
+    elif n % 2 == 0 or n % 3 == 0:
+        return False
+    i = 5
+    while i * i <= n:
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+        i += 6
+    return True
+
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
+def multiplicative_inverse(e, phi):
+    d = 0
+    x1 = 0
+    x2 = 1
+    y1 = 1
+    temp_phi = phi
+
+    while e > 0:
+        temp1 = temp_phi // e
+        temp2 = temp_phi - temp1 * e
+        temp_phi = e
+        e = temp2
+
+        x = x2 - temp1 * x1
+        y = d - temp1 * y1
+
+        x2 = x1
+        x1 = x
+        d = y1
+        y1 = y
+
+    if temp_phi == 1:
+        return d + phi
+
+def generate_keypair(bits):
+    p, q = 0, 0
+
+    while not is_prime(p):
+        p = random.getrandbits(bits)
+    while not is_prime(q) or p == q:
+        q = random.getrandbits(bits)
+
+    n = p * q
+    phi = (p - 1) * (q - 1)
+
+    e = random.randint(1, phi)
+    while gcd(e, phi) != 1:
+        e = random.randint(1, phi)
+
+    d = multiplicative_inverse(e, phi)
+
+    return ((n, e), (n, d))
+
+def rsa_encrypt(public_key, plaintext):
+    n, e = public_key
+    encrypted = [pow(ord(char), e, n) for char in plaintext]
+    return encrypted
+
+def client_program():
+    host = socket.gethostname()
+    port = 5000
+    client_socket = socket.socket()
+    client_socket.connect((host, port))
+
+    bits = 32
+    public_key, private_key = generate_keypair(bits)
+
+    pkey_json = json.dumps(private_key)
+    client_socket.send(pkey_json.encode())
+
+    while True:
+        message = input("Enter a message (or 'stop' to quit): ")
+
+        if message.lower().strip() == 'stop':
+            break
+
+        encrypted_msg = rsa_encrypt(public_key, message)
+        print("Encrypted message: " + str(encrypted_msg))
+
+        data_json = json.dumps(encrypted_msg)
+        client_socket.send(data_json.encode())
+
+    client_socket.close()
+
+if __name__ == '__main__':
+    client_program()
+
+</h5>
+<h5>
+import socket
+import json
+import random
+
+def is_prime(n):
+    if n <= 1:
+        return False
+    elif n <= 3:
+        return True
+    elif n % 2 == 0 or n % 3 == 0:
+        return False
+    i = 5
+    while i * i <= n:
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+        i += 6
+    return True
+
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+
+def multiplicative_inverse(e, phi):
+    d = 0
+    x1 = 0
+    x2 = 1
+    y1 = 1
+    temp_phi = phi
+
+    while e > 0:
+        temp1 = temp_phi // e
+        temp2 = temp_phi - temp1 * e
+        temp_phi = e
+        e = temp2
+
+        x = x2 - temp1 * x1
+        y = d - temp1 * y1
+
+        x2 = x1
+        x1 = x
+        d = y1
+        y1 = y
+
+    if temp_phi == 1:
+        return d + phi
+
+def generate_keypair(bits):
+    p, q = 0, 0
+
+    while not is_prime(p):
+        p = random.getrandbits(bits)
+    while not is_prime(q) or p == q:
+        q = random.getrandbits(bits)
+    print(p,q)
+    n = p * q
+    print("p="+str(p))
+    phi = (p - 1) * (q - 1)
+
+    e = random.randint(1, phi)
+    while gcd(e, phi) != 1:
+        e = random.randint(1, phi)
+
+    d = multiplicative_inverse(e, phi)
+
+    return ((n, e), (n, d))
+
+def rsa_decrypt(private_key, ciphertext):
+    n, d = private_key
+    decrypted = [chr(pow(char, d, n)) for char in ciphertext]
+    return ''.join(decrypted)
+
+def server_program():
+    host = socket.gethostname()
+    port = 5000
+
+    server_socket = socket.socket()
+    print("Server started...")
+    server_socket.bind((host, port))
+    server_socket.listen(2)
+    conn, address = server_socket.accept()
+    print("Connection from: " + str(address))
+
+    bits = 32
+    public_key, private_key = generate_keypair(bits)
+    print("Public key:", public_key)
+    print("Private key:", private_key)
+
+    while True:
+        pkey_json = conn.recv(1024).decode()
+        if not pkey_json:
+            break
+        private_key = json.loads(pkey_json)
+
+        while True:
+            data_json = conn.recv(1024).decode()
+            if not data_json:
+                break
+
+            data = json.loads(data_json)
+            print("Received encrypted msg from client:", data)
+            decrypted_msg = rsa_decrypt(private_key, data)
+            print("Received and decrypted message: " + decrypted_msg)
+
+    conn.close()
+
+if __name__ == '__main__':
+    server_program()
+
+</h5>
