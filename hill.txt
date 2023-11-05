@@ -1,0 +1,140 @@
+<h5>
+import socket
+import json
+
+def client_program():
+    host=socket.gethostname()
+    port=4000
+
+    client_socket = socket.socket()
+    client_socket.connect((host,port))
+    key=[]
+    msg = input("Enter a message: ")
+    n = int(input("Enter key matrix size: "))
+    for i in range(0,n):
+        row=[]
+        for j in range (0,n):
+            row.append(int(input("Enter key matrix element: ")))
+        key.append(row)
+
+    if(len(msg)%n!=0):
+        for i in range(0,n-len(msg)%n):
+            msg+='x'
+    
+    msg_matrix=[]
+    row=[]
+    for i in msg:
+        if(len(row)==n):
+            msg_matrix.append(row)
+            row=[]
+        row.append(ord(i)-ord('a'))
+    msg_matrix.append(row)
+
+    encrypted_msg = []
+
+    for i in range(0,int(len(msg)/n)):
+        row=[]
+        for j in range (0,n):
+            sum=0
+            for k in range (0,n):
+                sum+=msg_matrix[i][k]*key[k][j]
+            row.append(sum%26)
+        encrypted_msg.append(row)
+
+    for i in range(0,len(encrypted_msg)):
+        for j in range (0,len(encrypted_msg[i])):
+            print(encrypted_msg[i][j])
+
+    client_socket.send(json.dumps(encrypted_msg).encode())
+if __name__ == "__main__":
+    client_program()
+</h5>
+
+<h5>
+import socket
+import json
+
+def server_program():
+    host = socket.gethostname()
+    port = 4000
+
+    server_socket = socket.socket()
+    server_socket.bind((host,port))
+    server_socket.listen(2)
+    print("Server started...")
+    conn, address = server_socket.accept()
+    print("Connection from: " + str(address))
+
+    msg = json.loads(conn.recv(1024).decode())
+    key=[]
+    n = int(input("Enter key matrix size: "))
+    for i in range(0,n):
+        row=[]
+        for j in range (0,n):
+            row.append(int(input("Enter key matrix element: ")))
+        key.append(row)
+
+    key_inv=[]
+    if(n==2):
+        key_inv.append([key[1][1],-key[0][1]])
+        key_inv.append([-key[1][0],key[0][0]])
+        det=key[0][0]*key[1][1]-key[0][1]*key[1][0]
+        while det<0:
+            det+=26
+        det%=26
+        det_inv=0
+        while True:
+            if((det*det_inv)%26==1):
+                break
+            det_inv+=1
+        
+        for i in range(0,n):
+            for j in range(0,n):
+                key_inv[i][j]=(key_inv[i][j]*det_inv)%26
+                while key_inv[i][j]<0:
+                    key_inv[i][j]+=26
+    else:
+        key_inv.append([key[1][1]*key[2][2]-key[1][2]*key[2][1],key[0][2]*key[2][1]-key[0][1]*key[2][2],key[0][1]*key[1][2]-key[0][2]*key[1][1]])
+        key_inv.append([key[1][2]*key[2][0]-key[1][0]*key[2][2],key[0][0]*key[2][2]-key[0][2]*key[2][0],key[0][2]*key[1][0]-key[0][0]*key[1][2]])
+        key_inv.append([key[1][0]*key[2][1]-key[1][1]*key[2][0],key[0][1]*key[2][0]-key[0][0]*key[2][1],key[0][0]*key[1][1]-key[0][1]*key[1][0]])
+        det=0
+        for i in range(0,n):
+            det+=key[0][i]*key_inv[i][0]
+        while det<0:
+            det+=26
+        det%=26
+        det_inv=0
+        while True:
+            if((det*det_inv)%26==1):
+                break
+            det_inv+=1
+        
+        for i in range(0,n):
+            for j in range(0,n):
+                key_inv[i][j]=(key_inv[i][j]*det_inv)%26
+                while key_inv[i][j]<0:
+                    key_inv[i][j]+=26
+
+    
+    decrypted_msg_matrix = []
+
+    for i in range(0,len(msg)):
+        row=[]
+        for j in range (0,n):
+            sum=0
+            for k in range (0,n):
+                sum+=msg[i][k]*key_inv[k][j]
+            row.append(sum%26)
+        decrypted_msg_matrix.append(row)
+
+    decrypted_msg = ""
+
+    for i in range(0,len(decrypted_msg_matrix)):
+        for j in range (0,len(decrypted_msg_matrix[i])):
+            decrypted_msg += chr(decrypted_msg_matrix[i][j] + ord('a'))
+    
+    print("Decrypted message: " + decrypted_msg)
+
+if __name__ == "__main__":
+    server_program()
+</h5>
