@@ -72,6 +72,13 @@ app.get('/affineattack', (req, res) => {
   res.send(data);
 })
 
+app.get('/dss', (req, res) => {
+  const fs = require('fs');
+  const data = fs.readFileSync('./dss.txt',
+    { encoding: 'utf8', flag: 'r' });
+  res.send(data);
+})
+
 app.get('/andriod1', (req, res) => {
   const fs = require('fs');
   const data = fs.readFileSync('./andriod1.txt',
