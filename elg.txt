@@ -1,180 +1,75 @@
 <h5>
-# Python program to illustrate ElGamal encryption
 import socket
 import random
-from math import pow
+import json
 
 a = random.randint(2, 10)
 
-
 def gcd(a, b):
-    if a < b:
-        return gcd(b, a)
-    elif a % b == 0:
-        return b
-    else:
-        return gcd(b, a % b)
+    if(b==0):
+        return a
+    return gcd(b,a%b)
 
-
-# Generating large random numbers
-def gen_key(q):
-    key = random.randint(1, q)
-    while gcd(q, key) != 1:
-        key = random.randint(1, q)
-
-    return key
-
-
-# Modular exponentiation
-def power(a, b, c):
-    x = 1
-    y = a
-
-    while b > 0:
-        if b % 2 != 0:
-            x = (x * y) % c
-        y = (y * y) % c
-        b = int(b / 2)
-
-    return x % c
-
-
-# Asymmetric encryption
 def encrypt(msg, q, h, g):
     en_msg = []
 
-    k = gen_key(q)  # Private key for sender
-    s = power(h, k, q)
-    p = power(g, k, q)
+    k = random.randint(1, q)
+    while gcd(q, k) != 1:
+        k = random.randint(1, q)
+
+    s = pow(h, k, q)
+    p = pow(g, k, q)
 
     for i in range(0, len(msg)):
         en_msg.append(msg[i])
 
-    print("g^k used : ", p)
-    print("g^ak used : ", s)
     for i in range(0, len(en_msg)):
         en_msg[i] = s * ord(en_msg[i])
 
     return en_msg, p
 
-
-def decrypt(en_msg, p, key, q):
-    dr_msg = []
-    h = power(p, key, q)
-    for i in range(0, len(en_msg)):
-        dr_msg.append(chr(int(en_msg[i] / h)))
-
-    return dr_msg
-
-
-def get_string_from_byte_string(byte_string):
-    return (str(byte_string))[2:-1]
-
-
-# Driver code
-def main():
+def client_program():
     host = socket.gethostname()
     port = 5000
     client_socket = socket.socket()
     client_socket.connect((host, port))
     print("Connected to server")
 
-    data = client_socket.recv(1024)
-    q = int(get_string_from_byte_string(data))
+    q = int(client_socket.recv(1024).decode())
+    g = int(client_socket.recv(1024).decode())
+    h = int(client_socket.recv(1024).decode())
 
-    data = client_socket.recv(1024)
-    g = int(get_string_from_byte_string(data))
+    msg = input("Enter message to encrypt: ")
+    en_msg, p = encrypt(msg, q, h, g)
+    print("Encrypted Message: ", en_msg)
 
-    data = client_socket.recv(1024)
-    h = int(get_string_from_byte_string(data))
+    client_socket.send(json.dumps(en_msg).encode())
+    client_socket.send(str(p).encode())
 
-    while True:
-        msg = input("Enter message to encrypt: ")
-        en_msg, p = encrypt(msg, q, h, g)
-        print("Sending encrypted Message: ", en_msg)
-
-        client_socket.send(str(en_msg).encode())
-        client_socket.send(str(p).encode())
-
-
-if __name__ == "__main__":
-    main()
+if __name__=='__main__':
+    client_program()
 </h5>
 <h5>
-# Python program to illustrate ElGamal encryption
 import socket
 import random
-from math import pow
+import json
 
 a = random.randint(2, 10)
 
-
 def gcd(a, b):
-    if a < b:
-        return gcd(b, a)
-    elif a % b == 0:
-        return b
-    else:
-        return gcd(b, a % b)
-
-
-# Generating large random numbers
-def gen_key(q):
-    key = random.randint(1, q)
-    while gcd(q, key) != 1:
-        key = random.randint(1, q)
-
-    return key
-
-
-# Modular exponentiation
-def power(a, b, c):
-    x = 1
-    y = a
-
-    while b > 0:
-        if b % 2 != 0:
-            x = (x * y) % c
-        y = (y * y) % c
-        b = int(b / 2)
-
-    return x % c
-
-
-# Asymmetric encryption
-def encrypt(msg, q, h, g):
-    en_msg = []
-
-    k = gen_key(q)  # Private key for sender
-    s = power(h, k, q)
-    p = power(g, k, q)
-
-    for i in range(0, len(msg)):
-        en_msg.append(msg[i])
-
-    print("g^k used : ", p)
-    print("g^ak used : ", s)
-    for i in range(0, len(en_msg)):
-        en_msg[i] = s * ord(en_msg[i])
-
-    return en_msg, p
-
+    if(b==0):
+        return a
+    return gcd(b,a%b)
 
 def decrypt(en_msg, p, key, q):
     dr_msg = []
-    h = power(p, key, q)
+    h = pow(p, key, q)
     for i in range(0, len(en_msg)):
         dr_msg.append(chr(int(en_msg[i] / h)))
 
     return dr_msg
 
-
-def get_string_from_byte_string(byte_string):
-    return (str(byte_string))[2:-1]
-
-
-# Driver code
-def main():
+def server_program():
     host = socket.gethostname()
     port = 5000
     server_socket = socket.socket()
@@ -189,30 +84,24 @@ def main():
     g = random.randint(2, q)
     conn.send(str(g).encode())
 
-    key = gen_key(q)  # Private key for receiver
+    key = random.randint(1, q)
+    while gcd(q, key) != 1:
+        key = random.randint(1, q)
     print("Private Key :", key)
 
-    h = power(g, key, q)
+    h = pow(g, key, q)
     conn.send(str(h).encode())
 
-    print("g used : ", g)
-    print("g^a used : ", h)
+    en_msg = json.loads(conn.recv(1024).decode())
+    p = int(conn.recv(1024).decode())
 
-    while True:
-        enc_msg = conn.recv(1024)
-        en_msg = (enc_msg.decode())[1:-1].split(", ")
-        en_msg = [int(i) for i in en_msg]
+    print("Encrypted Message Received: ", en_msg)
+    print("p Received: ", p)
 
-        p = int(get_string_from_byte_string(conn.recv(1024)))
+    dr_msg = decrypt(en_msg, p, key, q)
+    dmsg = "".join(dr_msg)
+    print("Decrypted Message :", dmsg)
 
-        print("Encrypted Message Received: ", en_msg)
-        print("p Received: ", p)
-
-        dr_msg = decrypt(en_msg, p, key, q)
-        dmsg = "".join(dr_msg)
-        print("Decrypted Message :", dmsg)
-
-
-if __name__ == "__main__":
-    main()
+if __name__=='__main__':
+    server_program()
 </h5>
