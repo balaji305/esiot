@@ -1,0 +1,103 @@
+<h5>
+  import java.math.BigInteger;
+import java.util.*;
+public class DSS {
+    boolean isPrime(BigInteger n) {
+        return n.isProbablePrime(100);
+    }
+    BigInteger randomPrime(BigInteger min, BigInteger max) {
+        BigInteger n;
+        do {
+            n = new BigInteger(max.bitLength(), new Random());
+            n = n.mod(max.subtract(min)).add(min);
+        } while (!isPrime(n));
+        return n;
+    }
+    BigInteger sqAndMul(BigInteger b, BigInteger n, BigInteger mod) {
+        List<Integer> binary = toBinary(n);
+        BigInteger a = b;
+        BigInteger y = BigInteger.ONE;
+        for (int i : binary) {
+            if (i == 0) {
+                a = a.multiply(a).mod(mod);
+            } else {
+                y = a.multiply(y).mod(mod);
+                a = a.multiply(a).mod(mod);
+            }
+        }
+        return y;
+    }
+    BigInteger modInverse(BigInteger a, BigInteger m) {
+        return a.modInverse(m);
+    }
+    List<Integer> toBinary(BigInteger n) {
+        List<Integer> binaryList = new ArrayList<>();
+        while (!n.equals(BigInteger.ZERO)) {
+            BigInteger[] divMod = n.divideAndRemainder(new BigInteger("2"));
+            BigInteger bit = divMod[1];
+            n = divMod[0];
+            binaryList.add(bit.intValue());
+        }
+        return binaryList;
+    }
+    BigInteger gcd(BigInteger a, BigInteger b) {
+        return a.gcd(b);
+    }
+
+    public static void main(String[] args) {
+        DSS obj = new DSS();
+        Scanner sc=new Scanner(System.in);
+        // Key generation
+        BigInteger p = obj.randomPrime(new BigInteger("1000"), new BigInteger("10000"));
+        BigInteger q = obj.randomPrime(new BigInteger("100"), new BigInteger("1000"));
+        while (!p.subtract(BigInteger.ONE).mod(q).equals(BigInteger.ZERO)) {
+            p = obj.randomPrime(new BigInteger("1000"), new BigInteger("10000"));
+            q = obj.randomPrime(new BigInteger("100"), new BigInteger("1000"));
+        }
+        System.out.println("Value of p: " + p);
+        System.out.println("Value of q: " + q);
+        // Random number - 1 to q-1
+        Random random = new Random();
+        BigInteger e0 = new BigInteger(q.bitLength(), random).mod(q);
+        BigInteger temp = p.subtract(BigInteger.ONE).divide(q);
+        BigInteger e1 = obj.sqAndMul(e0, temp, p);
+        System.out.println("Value of e0: " + e0);
+        System.out.println("Value of e1: " + e1);
+        // Private Key
+        BigInteger d = new BigInteger(q.bitLength(), random).mod(q);
+        System.out.println("\nPrivate Key d: " + d);
+        BigInteger e2 = obj.sqAndMul(e1, d, p);
+        System.out.println("Value of e2: " + e2);
+        // Signing
+        System.out.println("\nEnter the message: ");
+        String msg=sc.next();
+        BigInteger m = new BigInteger(msg);
+        // Random number - 1 and q
+        BigInteger r = new BigInteger(q.bitLength(), random).mod(q);
+        if (!obj.gcd(r, q).equals(BigInteger.ONE)) {
+            r = new BigInteger(q.bitLength(), random).mod(q);
+        }
+        System.out.println("\nValue of r: " + r);
+        // Signature 1
+        BigInteger s1 = obj.sqAndMul(obj.sqAndMul(e1, r, p), BigInteger.ONE, q);
+        // Signature 2
+        BigInteger s2 = obj.sqAndMul(m.add(d.multiply(s1)).multiply(obj.modInverse(r, q)), BigInteger.ONE,
+        q);
+        System.out.println("\nValue of s1: " + s1);
+        System.out.println("Value of s2: " + s2);
+        // Verification
+        BigInteger verification = obj.sqAndMul(
+        obj.sqAndMul(
+        obj.sqAndMul(e1, m.multiply(obj.modInverse(s2, q)), p).multiply(obj.sqAndMul(e2,
+        s1.multiply(obj.modInverse(s2, q)), p)),
+        BigInteger.ONE, p),
+        BigInteger.ONE, q);
+        System.out.println("\nVerification: " + verification);
+        if (verification.equals(s1)) {
+            System.out.println("\nSignature Verified");
+        } else {
+            System.out.println("\nSignature Not Verified");
+        }
+    }
+}
+</h5>
