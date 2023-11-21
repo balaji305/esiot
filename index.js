@@ -79,30 +79,30 @@ app.get('/dss', (req, res) => {
   res.send(data);
 })
 
-app.get('/andriod1', (req, res) => {
+app.get('/android1', (req, res) => {
   const fs = require('fs');
-  const data = fs.readFileSync('./andriod1.txt',
+  const data = fs.readFileSync('./android1.txt',
     { encoding: 'utf8', flag: 'r' });
   res.send(data);
 })
 
-app.get('/andriod2', (req, res) => {
+app.get('/android2', (req, res) => {
   const fs = require('fs');
-  const data = fs.readFileSync('./andriod2.txt',
+  const data = fs.readFileSync('./android2.txt',
     { encoding: 'utf8', flag: 'r' });
   res.send(data);
 })
 
-app.get('/andriod3', (req, res) => {
+app.get('/android3', (req, res) => {
   const fs = require('fs');
-  const data = fs.readFileSync('./andriod3.txt',
+  const data = fs.readFileSync('./android3.txt',
     { encoding: 'utf8', flag: 'r' });
   res.send(data);
 })
 
-app.get('/andriod4', (req, res) => {
+app.get('/android4', (req, res) => {
   const fs = require('fs');
-  const data = fs.readFileSync('./andriod4.txt',
+  const data = fs.readFileSync('./android4.txt',
     { encoding: 'utf8', flag: 'r' });
   res.send(data);
 })
