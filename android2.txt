@@ -1,1 +1,16 @@
 
+in activity main.xml
+
+<View
+        android:id="@+id/square_view"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="#FF0000"
+        app:layout_constraintBottom_toTopOf="@id/animate_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+ObjectAnimator animation = ObjectAnimator.ofFloat(squareView, "translationX", -200f, 200f);
+animation.setDuration(1000);
+animation.start();
