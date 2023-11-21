@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
             notificationChannel.setDescription(description);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(notificationChannel);
+
         }
     }
 
@@ -132,3 +133,25 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 </h5>
+
+private void createNotificationChannel(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            String channelName = "channelName",
+                    channelDesc = "channelDesc";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel notificationChannel = new NotificationChannel("1", channelName, importance);
+            notificationChannel.setDescription(channelDesc);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+    }
+    
+    private void sendNotification(){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "1");
+        builder.setContentText("test");
+        builder.setContentTitle("title");
+        builder.setSmallIcon(R.drawable.baseline_doorbell_24);
+        builder.setAutoCancel(true);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+        notificationManagerCompat.notify(1, builder.build());
+    }
