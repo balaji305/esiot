@@ -1,1 +1,5 @@
 
+private void openCamera() {
+        Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivities(new Intent[]{i});
+}
